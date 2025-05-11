@@ -1,1 +1,1614 @@
+1---Design (Draw ER Diagram) and implement aEmployee Management System Database using 
+DDL statements and apply normalization on them. Implement primary key, foreign key, alter 
+table.Employee(id, name, address, doj, salary, did, pid), Department(did, dname) and 
+Location(Lid, LName) 
+Write and execute following SQL statements 
+Get details of all employees working in Department ‘IT’ 
+Display details of employees who joined in year 2012 and working in ADMIN 
+department. 
+Get Details of employees whose name starts with ‘A’ 
+Display total salary of IT Department  
+Get details of employee who is having maximum salary. 
+
+
+DROP DATABASE IF EXISTS EmployeeManagement;
+CREATE DATABASE EmployeeManagement;
+USE EmployeeManagement;
+CREATE TABLE Location (lid INT PRIMARY KEY, lname VARCHAR(50));
+CREATE TABLE Department (did INT PRIMARY KEY, dname VARCHAR(50), lid INT, FOREIGN KEY (lid) REFERENCES Location(lid));
+CREATE TABLE Employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100),
+    doj DATE,
+    salary DECIMAL(10,2),
+    did INT,
+    pid INT,
+    FOREIGN KEY (did) REFERENCES Department(did),
+    FOREIGN KEY (pid) REFERENCES Employee(id)
+);
+INSERT INTO Location VALUES (1, 'Pune'), (2, 'Mumbai'), (3, 'Delhi');
+INSERT INTO Department VALUES (101, 'IT', 1), (102, 'HR', 2), (103, 'ADMIN', 3);
+INSERT INTO Employee VALUES 
+(1, 'Amit', 'Pune', '2012-06-15', 60000.00, 101, NULL),
+(2, 'Sneha', 'Mumbai', '2012-03-10', 55000.00, 103, 1),
+(3, 'Anjali', 'Delhi', '2014-09-20', 50000.00, 102, 1),
+(4, 'Aakash', 'Pune', '2013-01-05', 65000.00, 101, 1),
+(5, 'Rohit', 'Delhi', '2012-11-12', 70000.00, 103, 2),
+(6, 'Ankita', 'Pune', '2015-08-01', 80000.00, 101, 4);
+ALTER TABLE Employee ADD email VARCHAR(100);
+SELECT e.* FROM Employee e JOIN Department d ON e.did = d.did WHERE d.dname = 'IT';
+SELECT e.* FROM Employee e JOIN Department d ON e.did = d.did WHERE YEAR(e.doj) = 2012 AND d.dname = 'ADMIN';
+SELECT * FROM Employee WHERE name LIKE 'A%';
+SELECT SUM(e.salary) AS Total_Salary FROM Employee e JOIN Department d ON e.did = d.did WHERE d.dname = 'IT';
+SELECT * FROM Employee WHERE salary = (SELECT MAX(salary) FROM Employee);
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2--- Create Employee(id, name, address, doj, salary, did, pid),  table. Define id as primary key.If we 
+update record from Employee table and salary goes above 100000 then set it to 100000 and salary 
+goes below 25000 then set it 25000 using trigger. (i.e. Min Salary: 25000, Max Salary: 100000) 
+
+
+DROP DATABASE IF EXISTS Employee;
+CREATE DATABASE Employee;
+USE Employee;
+CREATE TABLE Employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    address VARCHAR(255),
+    doj DATE,
+    salary DECIMAL(10, 2),
+    did INT,
+    pid INT
+);
+INSERT INTO Employee VALUES
+(1, 'Amit Kumar', 'Delhi', '2020-01-15', 50000.00, 101, 201),
+(2, 'Priya Sharma', 'Mumbai', '2021-06-23', 80000.00, 102, 202),
+(3, 'Rahul Verma', 'Pune', '2022-03-10', 30000.00, 103, 203);
+DELIMITER //
+CREATE TRIGGER trg_salary_limit_before_update
+BEFORE UPDATE ON Employee
+FOR EACH ROW
+BEGIN
+    IF NEW.salary > 100000 THEN
+        SET NEW.salary = 100000;
+    ELSEIF NEW.salary < 25000 THEN
+        SET NEW.salary = 25000;
+    END IF;
+END;
+//
+DELIMITER ;
+UPDATE Employee SET salary = 120000 WHERE id = 1;
+UPDATE Employee SET salary = 20000 WHERE id = 2;
+SELECT * FROM Employee;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3-- Draw ER diagram for Employee Management System Perform following SQL queries on 
+Employee database.Employee(id, name, address, doj, salary, did, pid), Department(did, dname) 
+and Location(Lid, LName) 
+Get details of all employees working in Department ‘FINANCE’ 
+Display details of employees who joined in Jan 2012 and working in ADMIN 
+department. 
+Get Details of employees whose name contains exactly four characters. 
+Display department wise total salary.  
+Get details of employee who is having maximum salary. 
+
+
+DROP DATABASE IF EXISTS Employee;
+CREATE DATABASE Employee;
+USE Employee;
+CREATE TABLE Department (
+    did INT PRIMARY KEY,
+    dname VARCHAR(50)
+);
+CREATE TABLE Location (
+    Lid INT PRIMARY KEY,
+    LName VARCHAR(100)
+);
+CREATE TABLE Employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100),
+    doj DATE,
+    salary DECIMAL(10,2),
+    did INT,
+    pid INT,
+    FOREIGN KEY (did) REFERENCES Department(did)
+);
+INSERT INTO Department VALUES
+(1, 'FINANCE'),
+(2, 'ADMIN'),
+(3, 'HR');
+INSERT INTO Location VALUES
+(1, 'Pune'),
+(2, 'Delhi'),
+(3, 'Mumbai');
+INSERT INTO Employee VALUES
+(101, 'Amit', 'Delhi', '2012-01-05', 95000.00, 1, 201),
+(102, 'Neha', 'Mumbai', '2012-01-20', 48000.00, 2, 202),
+(103, 'Raj', 'Pune', '2023-03-15', 87000.00, 1, 203),
+(104, 'Tina', 'Delhi', '2020-11-10', 120000.00, 2, 204),
+(105, 'John', 'Mumbai', '2015-07-01', 30000.00, 3, 205),
+(106, 'Megh', 'Pune', '2012-01-09', 60000.00, 2, 206);
+SELECT e.*
+FROM Employee e
+JOIN Department d ON e.did = d.did
+WHERE d.dname = 'FINANCE';
+SELECT e.*
+FROM Employee e
+JOIN Department d ON e.did = d.did
+WHERE d.dname = 'ADMIN'
+  AND MONTH(e.doj) = 1
+  AND YEAR(e.doj) = 2012;
+SELECT *
+FROM Employee
+WHERE LENGTH(name) = 4;
+SELECT d.dname, SUM(e.salary) AS total_salary
+FROM Employee e
+JOIN Department d ON e.did = d.did
+GROUP BY d.dname;
+SELECT *
+FROM Employee
+WHERE salary = (SELECT MAX(salary) FROM Employee);
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4-- Draw ER diagram for Library Management Database and create database using DDL statements. 
+Execute DDL/DML statements which demonstrate the use of views. Update the base table using 
+its corresponding view. Also consider restrictions on updatable views and perform view creation 
+from multiple tables. 
+
+
+DROP DATABASE IF EXISTS Library;
+CREATE DATABASE Library;
+USE Library;
+CREATE TABLE Book (
+BookID INT PRIMARY KEY,
+Title VARCHAR(100),
+Author VARCHAR(100),
+Publisher VARCHAR(100),
+Year INT);
+CREATE TABLE Member (
+MemberID INT PRIMARY KEY,
+Name VARCHAR(100),
+Address VARCHAR(255),
+Phone VARCHAR(15));
+CREATE TABLE Loan (
+LoanID INT PRIMARY KEY,
+BookID INT,
+MemberID INT,
+IssueDate DATE,
+ReturnDate DATE,
+FOREIGN KEY (BookID) REFERENCES Book(BookID),
+FOREIGN KEY (MemberID) REFERENCES Member(MemberID));
+INSERT INTO Book (BookID, Title, Author, Publisher, Year) VALUES
+(1, 'Introduction to SQL', 'John Doe', 'Tech Press', 2015),
+(2, 'Database Management', 'Jane Smith', 'Learn Publishing', 2018),
+(3, 'Advanced Databases', 'Robert Brown', 'Database World', 2020);
+INSERT INTO Member (MemberID, Name, Address, Phone) VALUES
+(1, 'Alice Johnson', '123 Elm St, Springfield', '555-1234'),
+(2, 'Bob Williams', '456 Oak St, Springfield', '555-5678'),
+(3, 'Charlie Brown', '789 Pine St, Springfield', '555-9876');
+INSERT INTO Loan (LoanID, BookID, MemberID, IssueDate, ReturnDate) VALUES
+(1, 1, 1, '2025-03-01', '2025-03-15'),
+(2, 2, 2, '2025-03-05', '2025-03-19'),
+(3, 3, 3, '2025-03-10', '2025-03-24');
+CREATE VIEW LoanDetails AS 
+SELECT Loan.LoanID, Book.Title AS BookTitle, Member.Name AS MemberName, Loan.IssueDate, Loan.ReturnDate FROM Loan 
+JOIN Book ON Loan.BookID = Book.BookID JOIN Member ON Loan.MemberID = Member.MemberID;
+SELECT * FROM LoanDetails;
+UPDATE LoanDetails SET IssueDate = '2025-03-15' WHERE LoanID = 1;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5-- Draw ER diagram for Employee Management System. Create Tables (Employee Database) with 
+primary key, unique key, not null, check and foreign key constraints.  
+Implement following queries 
+Get details of all employees working whose address in ‘Pune’ and working in 
+department ‘ADMIN’ 
+Display details of employees whose Department is same as Empid 2. 
+Get Details of employees whose name contains exactly four characters. 
+Display department wise total salary.   
+Get details of employee having maximum Salary 
+
+
+DROP DATABASE IF EXISTS EmployeeManagement;
+CREATE DATABASE EmployeeManagement;
+USE EmployeeManagement;
+CREATE TABLE Department (
+    DeptID INT PRIMARY KEY,
+    DeptName VARCHAR(100) NOT NULL
+);
+CREATE TABLE JobTitle (
+    JobTitleID INT PRIMARY KEY,
+    TitleName VARCHAR(100) NOT NULL
+);
+CREATE TABLE Employee (
+    EmpID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Address VARCHAR(255),
+    DOJ DATE NOT NULL,
+    Salary DECIMAL(10, 2) CHECK (Salary >= 25000 AND Salary <= 100000),
+    DeptID INT,
+    JobTitleID INT,
+    FOREIGN KEY (DeptID) REFERENCES Department(DeptID),
+    FOREIGN KEY (JobTitleID) REFERENCES JobTitle(JobTitleID),
+    UNIQUE (EmpID)
+);
+INSERT INTO Department (DeptID, DeptName) VALUES
+(1, 'ADMIN'),
+(2, 'FINANCE'),
+(3, 'HR');
+INSERT INTO JobTitle (JobTitleID, TitleName) VALUES
+(1, 'Manager'),
+(2, 'Developer'),
+(3, 'Analyst');
+INSERT INTO Employee (EmpID, Name, Address, DOJ, Salary, DeptID, JobTitleID) VALUES
+(1, 'sneha', 'Pune', '2022-01-01', 80000, 1, 1),
+(2, 'sweta', 'Mumbai', '2021-03-15', 95000, 2, 2),
+(3, 'ankit', 'Pune', '2020-05-20', 60000, 1, 3),
+(4, 'biraj', 'Bangalore', '2019-07-25', 45000, 2, 1),
+(5, 'chotu', 'Pune', '2021-12-10', 30000, 3, 2);
+SELECT * 
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID
+WHERE e.Address = 'Pune' AND d.DeptName = 'ADMIN';
+SELECT * 
+FROM Employee e1
+JOIN Employee e2 ON e1.DeptID = e2.DeptID
+WHERE e2.EmpID = 2;
+SELECT * 
+FROM Employee
+WHERE LENGTH(Name) = 4;
+SELECT d.DeptName, SUM(e.Salary) AS TotalSalary
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID
+GROUP BY d.DeptName;
+SELECT * 
+FROM Employee
+WHERE Salary = (SELECT MAX(Salary) FROM Employee);
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6-- Create and execute PL/SQL stored procedure to determine of class of Employee. 
+e.g Salary<25000 – Class III        Salary between 25000 and 75000 – Class II          Salary>75000 – Class I  
+
+
+DROP DATABASE IF EXISTS q6;
+CREATE DATABASE q6;
+USE q6;
+CREATE TABLE Employee(
+id INT PRIMARY KEY,
+name VARCHAR(50),
+salary DECIMAL(10,2));
+INSERT INTO Employee(id,name,salary) VALUES
+(1,'Aman',22000),
+(2,'Biraj',50000),
+(3,'Chotu',80000);
+DELIMITER $$
+CREATE PROCEDURE GetEmployeeClass(IN emp_id INT,OUT emp_class VARCHAR(20))
+BEGIN
+DECLARE emp_salary DECIMAL(10,2);
+SELECT salary INTO emp_salary FROM Employee WHERE id=emp_id;
+IF emp_salary<25000 THEN SET emp_class='Class III';
+ELSEIF emp_salary<=75000 THEN SET emp_class='Class II';
+ELSE SET emp_class='Class I';
+END IF;
+END $$
+DELIMITER ;
+CALL GetEmployeeClass(2,@class);
+SELECT @class;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+7--Create Employee(id, name, address, doj, salary, did, pid) and Employee_audit(id, doj, salary, 
+did, pid)  table. Write and execute suitable database triggers to save record to be updated into 
+values in Employee_audittable. 
+
+
+DROP DATABASE IF EXISTS emp_db;
+CREATE DATABASE emp_db;
+USE emp_db;
+CREATE TABLE Employee (
+id INT PRIMARY KEY,
+name VARCHAR(50), address VARCHAR(100),
+doj DATE, salary DECIMAL(10,2),
+did INT,
+pid INT);
+CREATE TABLE Employee_audit (
+id INT, 
+doj DATE, 
+salary DECIMAL(10,2), 
+did INT, 
+pid INT);
+INSERT INTO Employee (id, name, address, doj, salary, did, pid) VALUES (1, 'Alice', 'Pune', '2020-01-10', 30000, 101, 201);
+INSERT INTO Employee (id, name, address, doj, salary, did, pid) VALUES (2, 'Bob', 'Mumbai', '2019-05-22', 50000, 102, 202);
+DELIMITER $$
+CREATE TRIGGER before_employee_update BEFORE UPDATE ON Employee FOR EACH ROW BEGIN INSERT INTO Employee_audit (id, doj, salary, did, pid) VALUES (OLD.id, OLD.doj, OLD.salary, OLD.did, OLD.pid); 
+END $$
+DELIMITER ;
+UPDATE Employee SET salary = 55000 WHERE id = 2;
+SELECT * FROM Employee;
+SELECT * FROM Employee_audit;
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+8--Write a PL/SQL block to determine of class of Employee using cursor. 
+e.g Salary<25000 – Class III        Salary between 25000 and 75000 – Class II          Salary>75000 – Class I 
+
+
+DROP DATABASE IF EXISTS employee_db;
+CREATE DATABASE employee_db;
+USE employee_db;
+CREATE TABLE Employee (id INT PRIMARY KEY, name VARCHAR(50), salary DECIMAL(10,2));
+INSERT INTO Employee (id, name, salary) VALUES (1, 'Alice', 22000), (2, 'Bob', 50000), (3, 'Charlie', 80000);
+DELIMITER $$
+CREATE PROCEDURE DetermineEmployeeClass()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE emp_id INT;
+    DECLARE emp_name VARCHAR(50);
+    DECLARE emp_salary DECIMAL(10,2);
+    DECLARE emp_class VARCHAR(20);
+    DECLARE emp_cursor CURSOR FOR SELECT id, name, salary FROM Employee;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    OPEN emp_cursor;
+    read_loop: LOOP
+        FETCH emp_cursor INTO emp_id, emp_name, emp_salary;
+        IF done THEN LEAVE read_loop;
+        END IF;
+        IF emp_salary < 25000 THEN SET emp_class = 'Class III';
+        ELSEIF emp_salary BETWEEN 25000 AND 75000 THEN SET emp_class = 'Class II';
+        ELSE SET emp_class = 'Class I'; END IF;
+        SELECT CONCAT('Employee ID: ', emp_id, ', Name: ', emp_name, ', Class: ', emp_class) AS Employee_Class;
+    END LOOP;
+    CLOSE emp_cursor;
+END $$
+DELIMITER ;
+CALL DetermineEmployeeClass();
+
+
+
+
+DROP DATABASE IF EXISTS employee_db;
+CREATE DATABASE employee_db;
+USE employee_db;
+CREATE TABLE Employee(id INT PRIMARY KEY,name VARCHAR(50),salary DECIMAL(10,2));
+INSERT INTO Employee(id,name,salary) VALUES(1,'Alice',22000),(2,'Bob',50000),(3,'Charlie',80000);
+DELIMITER $$
+CREATE PROCEDURE DetermineEmployeeClass_WHILE()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE emp_id INT;
+DECLARE emp_name VARCHAR(50);
+DECLARE emp_salary DECIMAL(10,2);
+DECLARE emp_class VARCHAR(20);
+DECLARE emp_cursor CURSOR FOR SELECT id,name,salary FROM Employee;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+OPEN emp_cursor;
+FETCH emp_cursor INTO emp_id,emp_name,emp_salary;
+WHILE done=0 DO
+IF emp_salary<25000 THEN SET emp_class='Class III';
+ELSEIF emp_salary BETWEEN 25000 AND 75000 THEN SET emp_class='Class II';
+ELSE SET emp_class='Class I';
+END IF;
+SELECT CONCAT('Employee ID: ',emp_id,', Name: ',emp_name,', Class: ',emp_class) AS Employee_Class;
+FETCH emp_cursor INTO emp_id,emp_name,emp_salary;
+END WHILE;
+CLOSE emp_cursor;
+END $$
+DELIMITER ;
+CALL DetermineEmployeeClass_WHILE();
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+9-- Draw ER diagram for Library Management System. Create tables using DDL statements, 
+Perform following SQL queries on Library database. 
+Book(BookId, Title, Publisher, Price, Type,Dept) 
+BookIssue(BookId, UserId, IssueDate, ReturnDate) 
+User(UserId, Name) 
+Execute following queries   
+Display total number of Books of IT Departement. 
+Display total number books issued by Roll No 4225 
+Display details of all reference book. 
+Get details of all users who has not issued any book in year 2023. 
+Get details of users of Computer Department. 
+
+
+drop database if exists library;
+create database library;
+use library;
+create table book (
+    bookid int primary key,
+    title varchar(100),
+    publisher varchar(100),
+    price decimal(8,2),
+    type varchar(50), 
+    dept varchar(50)
+);
+create table user (
+    userid int primary key,
+    name varchar(100)
+);
+create table bookissue (
+    bookid int,
+    userid int,
+    issuedate date,
+    returndate date,
+    foreign key (bookid) references book(bookid),
+    foreign key (userid) references user(userid)
+);
+insert into book (bookid, title, publisher, price, type, dept) values
+(1, 'dbms concepts', 'pearson', 500.00, 'textbook', 'computer'),
+(2, 'operating systems', 'tmh', 650.00, 'textbook', 'it'),
+(3, 'ai reference', 'oreilly', 750.00, 'reference', 'it'),
+(4, 'networks', 'mcgraw hill', 480.00, 'textbook', 'computer'),
+(5, 'data science handbook', 'packt', 899.00, 'reference', 'it');
+insert into user (userid, name) values
+(4225, 'sweta sharma'),
+(4226, 'amit kumar'),
+(4227, 'priya singh'),
+(4228, 'ravi reddy');
+insert into bookissue (bookid, userid, issuedate, returndate) values
+(1, 4225, '2023-02-10', '2023-02-20'),
+(2, 4225, '2023-04-15', '2023-04-25'),
+(4, 4226, '2022-11-12', '2022-12-01');
+select count(*) as total_it_books
+from book
+where dept = 'it';
+select count(*) as total_issued_by_4225
+from bookissue
+where userid = 4225;
+select *
+from book
+where type = 'reference';
+select *
+from user
+where userid not in (
+    select distinct userid
+    from bookissue
+    where year(issuedate) = 2023
+);
+select distinct u.*
+from user u
+join bookissue bi on u.userid = bi.userid
+join book b on b.bookid = bi.bookid
+where b.dept = 'computer';
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+10--Create Student(RollNo, Name, Sub1Marks, Sub2Marks, Sub3Marks) Write and execute 
+PL/SQLfunction to determine Grade of Student. 
+e.gPercentage<=40  -PassPercentage>4
+
+drop database if exists student;
+create database student;
+use student;
+create table student(
+rollno int primary key,
+name varchar(50),
+sub1marks int,
+sub2marks int,
+sub3marks int);
+insert into student values
+(1, 'Sweta Sharma', 45, 50, 55),
+(2, 'Amit Kumar', 30, 35, 25),
+(3, 'Priya Singh', 60, 65, 70),
+(4, 'Ravi Reddy', 42, 45, 40);
+delimiter //
+create function getstudentgrades(roll int)
+returns varchar(20)
+deterministic
+begin
+declare total int;
+declare percent decimal(5,2);
+declare grade varchar(20);
+select sub1marks+sub2marks+sub3marks into total
+from student
+where rollno=roll;
+set percent=(total/300)*100;
+if percent <=40 then 
+set grade ='pass';
+elseif percent> 40 and percent<50 then
+set grade='II';
+elseif percent>=50 and percent<=60 then
+set grade='higher II';
+else
+set grade='I';
+end if;
+return grade;
+end;
+//
+delimiter ;
+select rollno,name,getstudentgrades(rollno) as grade
+from student;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+11--- Draw ER diagram for Airline Reservation System. Create Tables using DDL statements. 
+Filght(FlightNo, From, To, Date) 
+Reservation(PID, FlightNo, Amount) 
+Passenger(PID, Name) 
+Passenger 
+Perform following SQL queries on Employee database.   
+Display flight details on 21 Oct 2021. 
+Display total number of passengers of flight no 12345 on 01 July 2024. 
+Display total amount of month Jan 2023 
+Display details of passenger who had cancelled flight on 01 Jan 2023 
+Get details of all passengers whose name ends with ‘n’
+
+
+drop database if exists airline;
+create database airline;
+use airline;
+create table passenger (
+    pid int primary key,
+    name varchar(100)
+);
+create table flight (
+    flightno int,
+    source varchar(100),
+    destination varchar(100),
+    date date,
+    primary key (flightno, date)
+);
+create table reservation (
+    pid int,
+    flightno int,
+    date date,
+    amount decimal(10,2),
+    status varchar(20),
+    foreign key (pid) references passenger(pid),
+    foreign key (flightno, date) references flight(flightno, date)
+);
+insert into passenger values
+(101, 'arjun'),
+(102, 'kiran'),
+(103, 'rajan'),
+(104, 'neha');
+insert into flight values
+(12345, 'mumbai', 'delhi', '2024-07-01'),
+(54321, 'pune', 'kolkata', '2021-10-21'),
+(67890, 'chennai', 'bengaluru', '2023-01-15');
+insert into reservation values
+(101, 12345, '2024-07-01', 4500.00, 'booked'),
+(102, 12345, '2024-07-01', 4500.00, 'booked'),
+(103, 54321, '2021-10-21', 3200.00, 'booked'),
+(104, 67890, '2023-01-01', 3900.00, 'cancelled');
+insert into flight values (67890, 'chennai', 'bengaluru', '2023-01-01');
+insert into reservation values
+(101, 12345, '2024-07-01', 4500.00, 'booked'),
+(102, 12345, '2024-07-01', 4500.00, 'booked'),
+(103, 54321, '2021-10-21', 3200.00, 'booked'),
+(104, 67890, '2023-01-01', 3900.00, 'cancelled');
+select * from flight where date = '2021-10-21';
+select count(*) as totalpassanger_on12345
+from reservation
+where flightno = 12345 and status = 'booked' and date = '2024-07-01';
+select sum(amount) as totalsum
+from reservation
+where month(date) = 1 and year(date) = 2023 and status = 'booked';
+select p.*
+from passenger p
+join reservation r on p.pid = r.pid
+where r.date = '2023-01-01' and r.status = 'cancelled';
+select * from passenger
+where name like '%n';
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+12--Write a PL/SQL block to determine of grade of Student using cursor. 
+e.g Percentage<=40  -PassPercentage>40 and Percentage>=50 – II            
+Higher II               Percentage>60  - I 
+Percentage>50 and <=60 
+
+
+drop database if exists student;
+create database student;
+use student;
+create table student (
+    rollno int,
+    
+    name varchar(50),
+    percentage float
+);
+insert into student values
+(1, 'arjun', 38),
+(2, 'kiran', 45),
+(3, 'rajan', 55),
+(4, 'neha', 65);
+drop table if exists result_table;
+create table result_table (
+    rollno int,
+    name varchar(50),
+    percentage float,
+    grade varchar(20)
+);
+delimiter //
+create procedure determine_grades()
+begin
+    declare done int default 0;
+    declare roll int;
+    declare sname varchar(50);
+    declare perc float;
+    declare grade varchar(20);
+
+    declare cur cursor for
+        select rollno, name, percentage from student;
+
+    declare continue handler for not found set done = 1;
+
+    open cur;
+
+    read_loop: loop
+        fetch cur into roll, sname, perc;
+
+        if done then
+            leave read_loop;
+        end if;
+
+        if perc <= 40 then
+            set grade = 'pass';
+        elseif perc > 40 and perc <= 50 then
+            set grade = 'ii';
+        elseif perc > 50 and perc <= 60 then
+            set grade = 'higher ii';
+        elseif perc > 60 then
+            set grade = 'i';
+        end if;
+
+        insert into result_table values (roll, sname, perc, grade);
+    end loop;
+
+    close cur;
+
+    select * from result_table;
+end;
+//
+delimiter ;
+call determine_grades();
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+13--Write and execute PL/SQL stored procedureto calculate discount for Product. 
+e.g Price<10000 – 10% DiscountPrice between 10000 and 50000 – 15%          
+I         
+Price>75000 – Class
+
+
+drop database if exists product_db;
+create database product_db;
+use product_db;
+create table product (
+    pid int,
+    name varchar(50),
+    price float
+);
+insert into product values
+(1, 'keyboard', 9000),
+(2, 'printer', 15000),
+(3, 'laptop', 80000),
+(4, 'mouse', 3000),
+(5, 'monitor', 60000);
+create table discount_result (
+    pid int,
+    name varchar(50),
+    price float,
+    discount varchar(30)
+);
+delimiter //
+create procedure calculate_discount()
+begin
+    declare done int default 0;
+    declare pid int;
+    declare pname varchar(50);
+    declare pprice float;
+    declare disc varchar(30);
+
+    declare cur cursor for
+        select pid, name, price from product;
+    
+    declare continue handler for not found set done = 1;
+
+    open cur;
+
+    read_loop: loop
+        fetch cur into pid, pname, pprice;
+        if done then
+            leave read_loop;
+        end if;
+
+        if pprice < 10000 then
+            set disc = '10%';
+        elseif pprice >= 10000 and pprice <= 50000 then
+            set disc = '15%';
+        elseif pprice > 75000 then
+            set disc = 'Class';
+        else
+            set disc = 'No Discount';
+        end if;
+
+        insert into discount_result values (pid, pname, pprice, disc);
+    end loop;
+
+    close cur;
+
+    select * from discount_result;
+end;
+//
+delimiter ;
+call calculate_discount();
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+14--Write and execute PL/SQL stored function to determine of class of Employee. 
+e.g Salary<25000 – Class III        Salary between 25000 and 75000 – Class II          Salary>75000 – Class I     
+
+drop database if exists company;
+create database company;
+use company;
+create table employee (
+    eid int,
+    name varchar(50),
+    salary float
+);
+insert into employee values
+(1, 'arjun', 20000),
+(2, 'kiran', 50000),
+(3, 'rajan', 80000),
+(4, 'neha', 75000);
+delimiter //
+create function get_employee_class(sal float) 
+returns varchar(20)
+deterministic
+begin
+    declare class varchar(20);
+    if sal < 25000 then
+        set class = 'Class III';
+    elseif sal >= 25000 and sal <= 75000 then
+        set class = 'Class II';
+    elseif sal > 75000 then
+        set class = 'Class I';
+    end if;
+    return class;
+end;
+//
+delimiter ;
+select eid, name, salary, get_employee_class(salary) as class
+from employee;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+15-- Create Employee and Department tables. Write and execute database trigger to demonstrate 
+foreign key on delete cascade. 
+
+drop database if exists company;
+create database company;
+use company;
+create table department (
+    dept_id int primary key,
+    dept_name varchar(50)
+);
+create table employee (
+    emp_id int primary key,
+    emp_name varchar(50),
+    dept_id int,
+    foreign key (dept_id) references department(dept_id) on delete cascade
+);
+insert into department values
+(1, 'HR'),
+(2, 'IT');
+insert into employee values
+(101, 'Arjun', 1),
+(102, 'Kiran', 1),
+(103, 'Rajan', 2);
+select * from employee;
+delete from department where dept_id = 1;
+select * from employee;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+16--Design (ER Diagram) and Create Hospital Database.Patient(Pid, PName, Address, DOB), 
+Doctor(Did, DName, DOJ), PatientAdmission(PId, Date, Did).Execute DDL/DML statements 
+which demonstrate the use of views. Update the base table using its corresponding view. Also 
+consider restrictions on updatable views and perform view creation from multiple tables. 
+
+
+drop database if exists hospital;
+create database hospital;
+use hospital;
+create table patient (
+    pid int primary key,
+    pname varchar(100),
+    address varchar(255),
+    dob date
+);
+create table doctor (
+    did int primary key,
+    dname varchar(100),
+    doj date
+);
+create table patient_admission (
+    pid int,
+    date date,
+    did int,
+    foreign key (pid) references patient(pid),
+    foreign key (did) references doctor(did)
+);
+insert into patient values
+(1, 'arjun', 'pune', '2001-05-01'),
+(2, 'kiran', 'mumbai', '1999-11-10');
+insert into doctor values
+(101, 'dr. mehta', '2020-01-01'),
+(102, 'dr. sharma', '2021-06-15');
+insert into patient_admission values
+(1, '2024-05-01', 101),
+(2, '2024-05-02', 102);
+create view view_patient as
+select pid, pname, address from patient;
+update view_patient
+set address = 'delhi'
+where pid = 1;
+create view patient_doctor_info as
+select p.pname, d.dname, pa.date
+from patient p
+join patient_admission pa on p.pid = pa.pid
+join doctor d on d.did = pa.did;
+select * from view_patient;
+select * from patient_doctor_info;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+17--Draw ER diagram for Employee Management System. Create following tables. Apply 
+normalisation 
+Employee, Project and Department. Consider all types constraints (primary key, foreign key, 
+check, not null, unique) also implement Alter table and drop table. 
+
+drop database if exists ems;
+create database ems;
+use ems;
+create table department (
+    dept_id int primary key,
+    dept_name varchar(50) not null unique
+);
+create table project (
+    proj_id int primary key,
+    proj_name varchar(100) not null,
+    dept_id int,
+    foreign key (dept_id) references department(dept_id) on delete cascade
+);
+create table employee (
+    emp_id int primary key,
+    emp_name varchar(100) not null,
+    email varchar(100) unique,
+    salary decimal(10,2) check (salary >= 10000),
+    dept_id int,
+    proj_id int,
+    gender varchar(10),
+    foreign key (dept_id) references department(dept_id),
+    foreign key (proj_id) references project(proj_id) on delete cascade
+);
+insert into department values 
+(1, 'HR'),
+(2, 'IT'),
+(3, 'Finance');
+insert into project values 
+(101, 'Recruitment System', 1),
+(102, 'Website Revamp', 2),
+(103, 'Audit Tracker', 3);
+insert into employee values 
+(1, 'Arjun Sharma', 'arjun@email.com', 45000, 1, 101, 'Male'),
+(2, 'Neha Mehta', 'neha@email.com', 55000, 2, 102, 'Female'),
+(3, 'Kiran Das', 'kiran@email.com', 62000, 3, 103, 'Male');
+select * from department;
+select * from project;
+select * from employee;
+select e.emp_id, e.emp_name, e.gender, e.salary, d.dept_name, p.proj_name
+from employee e
+join department d on e.dept_id = d.dept_id
+join project p on e.proj_id = p.proj_id;
+delete from project where proj_id = 101;
+select * from employee;
+alter table employee add column date_of_joining date;
+alter table employee drop foreign key employee_ibfk_1;
+alter table employee drop foreign key employee_ibfk_2;
+drop table if exists employee;
+drop table if exists project;
+drop table if exists department;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+18-- Write procedure to Calculate discount on price. 
+e.g Price<1000 then discount=100, price>1000 then discount=200 
+
+CREATE DATABASE IF NOT EXISTS store;
+USE store;
+CREATE TABLE IF NOT EXISTS products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100),
+    price DECIMAL(10, 2)
+);
+INSERT INTO products (product_name, price) VALUES 
+('Product A', 800),
+('Product B', 1200),
+('Product C', 1500),
+('Product D', 500);
+DELIMITER $$
+CREATE PROCEDURE calculate_discount(IN price DECIMAL(10,2), OUT discount DECIMAL(10,2))
+BEGIN
+    IF price < 1000 THEN
+        SET discount = 100;
+    ELSE
+        SET discount = 200;
+    END IF;
+END$$
+DELIMITER ;
+SELECT product_name, price,
+    (CASE
+        WHEN price < 1000 THEN 100
+        ELSE 200
+    END) AS discount
+FROM products;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+19-- Draw ER diagram for Employee Management System. Convert it into relational Model. Apply 
+normalization. Create tables using MySQL. Implement primary key, foreign key, check, unique 
+and not null constraint.  
+Implement alter table with add, drop and modify 
+Implement following queries 
+Get seniority list of employees working in Department FINANCE 
+Display details of employees who joined in Year 2012 and working in ADMIN 
+department. 
+Get Details of employees whose name contains exactly four characters. 
+Display department wise total salary.   
+Get details of employee who is having maximum salary. 
+
+drop database if exists employee_management;
+create database employee_management;
+use employee_management;
+create table department (
+    dept_id int auto_increment primary key,
+    dept_name varchar(100) not null unique
+);
+create table employee (
+    emp_id int auto_increment primary key,
+    emp_name varchar(100) not null,
+    gender varchar(10),
+    salary decimal(10, 2),
+    join_date date,
+    dept_id int,
+    foreign key (dept_id) references department(dept_id)
+);
+insert into department (dept_name) values
+('hr'), 
+('it'), 
+('finance'), 
+('admin');
+insert into employee (emp_name, gender, salary, join_date, dept_id) values
+('arjun sharma', 'male', 45000, '2010-05-15', 1),
+('neha mehta', 'female', 55000, '2012-08-25', 2),
+('kiran das', 'male', 62000, '2015-11-30', 3),
+('priya kumar', 'female', 75000, '2017-06-14', 4),
+('rahul sharma', 'male', 80000, '2018-07-10', 1);
+alter table employee add column email varchar(100) unique;
+alter table employee modify column salary decimal(15, 2);
+alter table employee drop column email;
+select *
+from employee
+where dept_id = (select dept_id from department where dept_name = 'finance')
+order by join_date;
+select *
+from employee
+where year(join_date) = 2012 and dept_id = (select dept_id from department where dept_name = 'admin');
+select *
+from employee
+where length(emp_name) = 4;
+select d.dept_name, sum(e.salary) as total_salary
+from employee e
+join department d on e.dept_id = d.dept_id
+group by d.dept_name;
+select *
+from employee
+where salary = (select max(salary) from employee);
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+20-- Execute DDL/DML statements which demonstrate the use of views. Update the base table 
+using its corresponding view. Also consider restrictions on updatable views and perform view 
+creation from multiple tables. 
+
+drop database if exists employee_management;
+create database employee_management;
+use employee_management;
+create table department (
+    dept_id int auto_increment primary key,
+    dept_name varchar(100) not null unique
+);
+create table employee (
+    emp_id int auto_increment primary key,
+    emp_name varchar(100) not null,
+    gender varchar(10),
+    salary decimal(10, 2),
+    join_date date,
+    dept_id int,
+    foreign key (dept_id) references department(dept_id)
+);
+insert into department (dept_name) values
+('hr'), 
+('it'), 
+('finance'), 
+('admin');
+insert into employee (emp_name, gender, salary, join_date, dept_id) values
+('arjun sharma', 'male', 45000, '2010-05-15', 1),
+('neha mehta', 'female', 55000, '2012-08-25', 2),
+('kiran das', 'male', 62000, '2015-11-30', 3),
+('priya kumar', 'female', 75000, '2017-06-14', 4),
+('rahul sharma', 'male', 80000, '2018-07-10', 1);
+create view emp_dept_view as
+select e.emp_id, e.emp_name, e.salary, d.dept_name
+from employee e
+join department d on e.dept_id = d.dept_id;
+select * from emp_dept_view;
+update emp_dept_view
+set salary = 50000
+where emp_name = 'arjun sharma';
+select * from employee;
+create view high_salary_emp as
+select emp_id, emp_name, salary
+from employee
+where salary > 60000;
+select * from high_salary_emp;
+insert into employee (emp_name, gender, salary, join_date, dept_id)
+values ('john doe', 'male', 65000, '2019-08-10', 2);
+select * from high_salary_emp;
+create view dept_salary as
+select d.dept_name, sum(e.salary) as total_salary
+from employee e
+join department d on e.dept_id = d.dept_id
+group by d.dept_name;
+select * from dept_salary;
+insert into employee (emp_name, gender, salary, join_date, dept_id)
+values ('alice smith', 'female', 55000, '2020-03-01', 3);
+select * from dept_salary;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+21--Create Employee Table and if we update record from Employee table and salary goes above 
+100000 then set it to 100000 and if it goes below 25000 then set it to 25000 using trigger. 
+
+drop database if exists employee_management;
+create database employee_management;
+use employee_management;
+create table employee (
+    emp_id int auto_increment primary key,
+    emp_name varchar(100) not null,
+    gender varchar(10),
+    salary decimal(10, 2),
+    join_date date
+);
+insert into employee (emp_name, gender, salary, join_date) values
+('arjun sharma', 'male', 45000, '2010-05-15'),
+('neha mehta', 'female', 55000, '2012-08-25'),
+('kiran das', 'male', 62000, '2015-11-30'),
+('priya kumar', 'female', 75000, '2017-06-14'),
+('rahul sharma', 'male', 80000, '2018-07-10');
+delimiter //
+create trigger salary_update_trigger
+before update on employee
+for each row
+begin
+    if new.salary > 100000 then
+        set new.salary = 100000;
+    elseif new.salary < 25000 then
+        set new.salary = 25000;
+    end if;
+end;
+//
+delimiter ;
+update employee set salary = 120000 where emp_name = 'arjun sharma';
+update employee set salary = 20000 where emp_name = 'neha mehta';
+select * from employee;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+22--Create Student, Book and Staff Tables with primary key, foreign key constraints, Check, Not 
+Null and Unique constraint. Also implement 
+a. Alter table with add, drop and modify option b. Drop table 
+Display total number of Books of COMPDepartement.  
+Display total number books issued by Roll No 4225 
+Display details of all journals. 
+Get details of all users who has not issued any book in year 2023. 
+Get details of books of Computer Department. 
+
+drop database if exists sbs;
+create database sbs;
+use sbs;
+CREATE TABLE Student (
+    Roll_No INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Department VARCHAR(50) CHECK (Department IN ('COMP', 'IT', 'ENTC', 'MECH')),
+    Email VARCHAR(100) UNIQUE,
+    Phone VARCHAR(15) NOT NULL
+);
+CREATE TABLE Staff (
+    Staff_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Department VARCHAR(50),
+    Email VARCHAR(100) UNIQUE
+);
+CREATE TABLE Book (
+    Book_ID INT PRIMARY KEY,
+    Title VARCHAR(150) NOT NULL,
+    Author VARCHAR(100),
+    Category VARCHAR(50) CHECK (Category IN ('Journal', 'Textbook', 'Magazine')),
+    Department VARCHAR(50),
+    Issued_To INT,
+    Issue_Date DATE,
+    FOREIGN KEY (Issued_To) REFERENCES Student(Roll_No)
+);
+ALTER TABLE Student ADD Date_Of_Birth DATE;
+ALTER TABLE Staff MODIFY Name VARCHAR(150);
+ALTER TABLE Book DROP COLUMN Author;
+DROP TABLE Book;
+SELECT COUNT(*) AS Total_COMP_Books
+FROM Book
+WHERE Department = 'COMP';
+SELECT COUNT(*) AS Total_Issued
+FROM Book
+WHERE Issued_To = 4225;
+SELECT * FROM Book
+WHERE Category = 'Journal';
+SELECT * FROM Student
+WHERE Roll_No NOT IN (
+    SELECT DISTINCT Issued_To
+    FROM Book
+    WHERE YEAR(Issue_Date) = 2023
+    AND Issued_To IS NOT NULL
+);
+SELECT * FROM Book
+WHERE Department = 'COMP';
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+23--Draw ER diagram Employee Management System. Create tables using ER diagram. Perform 
+following SQL queries on Employeedatabase. 
+• Implementation of relational operators in SQL  
+• Boolean operators and pattern matching (and, or, not, %, _) 
+• Arithmetic operations and built in functions (+, -, /, *, ucase, lcase, sqroot, instr, abs, mod etc)
+
+
+DROP DATABASE IF EXISTS Employee;
+CREATE DATABASE Employee;
+USE Employee;
+CREATE TABLE Department (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL
+);
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(100) NOT NULL,
+    emp_position VARCHAR(100),
+    emp_salary DECIMAL(10, 2),
+    emp_dept_id INT,
+    FOREIGN KEY (emp_dept_id) REFERENCES Department(dept_id)
+);
+INSERT INTO Department (dept_id, dept_name) 
+VALUES 
+(1, 'HR'),
+(2, 'IT'),
+(3, 'Finance');
+INSERT INTO Employee (emp_id, emp_name, emp_position, emp_salary, emp_dept_id) 
+VALUES 
+(101, 'John Doe', 'Manager', 55000.00, 2),
+(102, 'Jane Smith', 'Developer', 45000.00, 2),
+(103, 'Sam Johnson', 'Accountant', 40000.00, 3);
+SELECT emp_name, emp_salary 
+FROM Employee 
+WHERE emp_salary > 45000;
+SELECT emp_name, emp_position 
+FROM Employee e 
+JOIN Department d ON e.emp_dept_id = d.dept_id 
+WHERE d.dept_name = 'IT';
+SELECT emp_name, emp_position 
+FROM Employee 
+WHERE emp_position = 'Developer' OR emp_position = 'Manager';
+SELECT emp_name 
+FROM Employee 
+WHERE emp_name LIKE 'J%';
+SELECT emp_name 
+FROM Employee 
+WHERE emp_name NOT LIKE '%Sam%';
+SELECT emp_name, emp_salary, emp_salary * 1.1 AS new_salary 
+FROM Employee;
+SELECT emp_name, LENGTH(emp_name) AS name_length 
+FROM Employee;
+SELECT emp_name, UPPER(emp_name) AS emp_name_uppercase 
+FROM Employee;
+SELECT emp_name, SQRT(emp_salary) AS salary_sqrt 
+FROM Employee;
+SELECT emp_name, ABS(emp_salary) AS absolute_salary 
+FROM Employee;
+SELECT emp_name, MOD(emp_salary, 100) AS salary_remainder 
+FROM Employee;
+SELECT emp_name, emp_salary 
+FROM Employee 
+WHERE emp_salary BETWEEN 40000 AND 50000;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+24--Design (ER Diagram) and create Library Management System Database. Assume suitable 
+entity sets and attributes. Implement all types of constraints, alter table(add/drop/modify), drop 
+table. 
+Display total number of Books. 
+Display total number books issued in year 2015 
+Display details of books having price more than 5000. 
+Get details of all users of IT Department. 
+Get details of books of Computer Department of PHI publication. 
+
+create database librarydb;
+use librarydb;
+
+create table department (
+    dept_id int primary key auto_increment,
+    dept_name varchar(100) not null unique
+);
+
+create table publisher (
+    publisher_id int primary key auto_increment,
+    publisher_name varchar(100) not null unique
+);
+
+create table book (
+    book_id int primary key auto_increment,
+    title varchar(255) not null,
+    author varchar(100),
+    price decimal(10,2),
+    publication_year year,
+    publisher_id int,
+    dept_id int,
+    foreign key (publisher_id) references publisher(publisher_id),
+    foreign key (dept_id) references department(dept_id)
+);
+create table user (
+    user_id int primary key auto_increment,
+    user_name varchar(100) not null,
+    dept_id int,
+    foreign key (dept_id) references department(dept_id)
+);
+create table issue (
+    issue_id int primary key auto_increment,
+    book_id int,
+    user_id int,
+    issue_date date,
+    foreign key (book_id) references book(book_id),
+    foreign key (user_id) references user(user_id)
+);
+insert into department (dept_name) values 
+('computer'), 
+('it'), 
+('electronics');
+insert into publisher (publisher_name) values 
+('phi'), 
+('mcgraw-hill'), 
+('pearson');
+insert into book (title, author, price, publication_year, publisher_id, dept_id) values
+('dbms concepts', 'navathe', 5500, 2014, 1, 1),
+('operating systems', 'silberschatz', 4000, 2013, 2, 2),
+('ai basics', 'stuart russell', 6200, 2015, 1, 1),
+('digital logic', 'morris mano', 3000, 2012, 3, 3);
+insert into user (user_name, dept_id) values
+('alice', 2),
+('bob', 1),
+('carol', 1),
+('david', 3);
+insert into issue (book_id, user_id, issue_date) values
+(1, 2, '2015-03-21'),
+(2, 1, '2016-07-10'),
+(3, 3, '2015-09-18'),
+(4, 4, '2017-01-05');
+alter table book add column language varchar(50);
+alter table book modify column language varchar(100);
+alter table book drop column language;
+drop table if exists issue;
+select count(*) as total_books from book;
+select count(*) as books_issued_2015
+from issue
+where year(issue_date) = 2015;
+select * from book 
+where price > 5000;
+select u.*
+from user u
+join department d on u.dept_id = d.dept_id
+where d.dept_name = 'it';
+select b.*
+from book b
+join department d on b.dept_id = d.dept_id
+join publisher p on b.publisher_id = p.publisher_id
+where d.dept_name = 'computer' and p.publisher_name = 'phi';
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+25--Create Employee and Employee audit table. In case of deleting record from Employee table 
+save record to be deleted in Employee_audit table using trigger.   
+
+DROP DATABASE IF EXISTS employeedb;
+create database employeedb;
+use employeedb;
+create table employee (
+    emp_id int primary key auto_increment,
+    emp_name varchar(100) not null,
+    emp_position varchar(100),
+    emp_salary decimal(10,2)
+);
+create table employee_audit (
+    audit_id int primary key auto_increment,
+    emp_id int,
+    emp_name varchar(100),
+    emp_position varchar(100),
+    emp_salary decimal(10,2),
+    deleted_at datetime
+);
+insert into employee (emp_name, emp_position, emp_salary) values
+('john doe', 'developer', 50000),
+('jane smith', 'manager', 75000),
+('susan lee', 'analyst', 45000);
+delimiter //
+create trigger before_employee_delete
+before delete on employee
+for each row
+begin
+    insert into employee_audit (emp_id, emp_name, emp_position, emp_salary, deleted_at)
+    values (old.emp_id, old.emp_name, old.emp_position, old.emp_salary, now());
+end//
+delimiter ;
+delete from employee where emp_id = 1;
+select * from employee;
+select * from employee_audit;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+26--Create Product(Id, Name, Price, ManufacturingYear). Implement procedure to calculate 
+discounted price of the product. 
+If Price <5000 then 5% discount, if price between 5000 and 10000 then 10% discount, if Price 
+>10000 then 15% discount.
+
+drop database if exists productdb;
+create database productdb;
+use productdb;
+create table product (
+    id int primary key auto_increment,
+    name varchar(100) not null,
+    price decimal(10,2),
+    manufacturing_year year
+);
+insert into product (name, price, manufacturing_year) values
+('laptop', 4500, 2022),
+('smartphone', 7500, 2023),
+('television', 12000, 2021);
+delimiter //
+create procedure get_discounted_price_by_id(in pid int)
+begin
+    declare original_price decimal(10,2);
+    declare discount_price decimal(10,2);
+    select price into original_price from product where id = pid;
+    if original_price < 5000 then
+        set discount_price = original_price * 0.95;
+    elseif original_price between 5000 and 10000 then
+        set discount_price = original_price * 0.90;
+    else
+        set discount_price = original_price * 0.85;
+    end if;
+    select pid as product_id, original_price as price, discount_price;
+end //
+delimiter ;
+call get_discounted_price_by_id(1);
+call get_discounted_price_by_id(2);
+call get_discounted_price_by_id(3);
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+27--Draw ER diagram for Admission Management System, Create tables using ER diagram. 
+Implement all types of constraints, alter table, drop table. 
+i. Display details of all applicants, 
+ii. Display list of all applicant of Rajasthan State.   
+iii. Sort all records by JEE marks  
+iv. Display merit list of first 60 students. 
+v. Get details of not eligible applicant. (JEE marks<50)  
+
+create database ams;
+use ams;
+CREATE TABLE Applicant (
+    Applicant_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    State VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    JEE_Marks INT CHECK (JEE_Marks BETWEEN 0 AND 360),
+    Category VARCHAR(20),
+    Status VARCHAR(20) CHECK (Status IN ('Eligible', 'Not Eligible'))
+);
+CREATE TABLE Course (
+    Course_ID INT PRIMARY KEY,
+    Course_Name VARCHAR(100) NOT NULL,
+    Duration INT CHECK (Duration > 0)
+);
+CREATE TABLE Admission (
+    Admission_ID INT PRIMARY KEY,
+    Applicant_ID INT,
+    Course_ID INT,
+    Admission_Date DATE NOT NULL,
+    FOREIGN KEY (Applicant_ID) REFERENCES Applicant(Applicant_ID),
+    FOREIGN KEY (Course_ID) REFERENCES Course(Course_ID)
+);
+#ALTER TABLE Examples
+-- Add column
+ALTER TABLE Applicant ADD Phone VARCHAR(15);
+
+-- Modify column
+ALTER TABLE Course MODIFY Duration SMALLINT;
+
+-- Drop column
+ALTER TABLE Applicant DROP COLUMN Category;
+
+#🧨 DROP TABLE Statement
+DROP TABLE Admission;
+
+#i. Display details of all applicants
+SELECT * FROM Applicant;
+
+#ii. Display list of all applicants of Rajasthan State
+SELECT * FROM Applicant
+WHERE State = 'Rajasthan';
+
+#iii. Sort all records by JEE marks
+SELECT * FROM Applicant
+ORDER BY JEE_Marks DESC;
+
+#iv. Display merit list of first 60 students
+SELECT * FROM Applicant
+WHERE Status = 'Eligible'
+ORDER BY JEE_Marks DESC
+LIMIT 60;
+
+#v. Get details of not eligible applicants (JEE marks < 50)
+SELECT * FROM Applicant
+WHERE JEE_Marks < 50 OR Status = 'Not Eligible';
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+28--Draw ER diagram for Exam Result Management System, Create tables using ER diagram. 
+Implement SQL queries to demonstrate use of %, _, and,, or, not, >, <, =, <=, >= 
+
+create database erms;
+use erms;
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(100) UNIQUE,
+    Department VARCHAR(50)
+);
+
+CREATE TABLE Course (
+    Course_ID INT PRIMARY KEY,
+    Course_Name VARCHAR(100),
+    Credits INT
+);
+
+CREATE TABLE Result (
+    Result_ID INT PRIMARY KEY,
+    Student_ID INT,
+    Course_ID INT,
+    Marks DECIMAL(5,2),
+    Grade CHAR(2),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Course_ID) REFERENCES Course(Course_ID)
+);
+
+#1. Use of % (wildcard in LIKE)
+SELECT * FROM Student
+WHERE Name LIKE 'A%';   -- Students whose name starts with A
+
+#2. Use of _ (wildcard for single character)
+SELECT * FROM Course
+WHERE Course_Name LIKE '_ata%';   -- Matches 'Data', 'Mata', etc.
+
+#3. Use of AND, OR, NOT
+SELECT * FROM Result
+WHERE Marks >= 40 AND Grade = 'B';
+
+SELECT * FROM Result
+WHERE Grade = 'A' OR Grade = 'B';
+
+SELECT * FROM Result
+WHERE NOT Grade = 'F';
+
+#4. Use of =, <, >, <=, >=
+SELECT * FROM Result
+WHERE Marks >= 90;
+
+SELECT * FROM Result
+WHERE Marks < 40;
+
+SELECT * FROM Result
+WHERE Marks BETWEEN 50 AND 60;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+29-- Draw ER diagram for Online Order Management System, Create tables using ER diagram. Implement SQL queries to demonstrate Group functions, Nested queries (use of in, not in, all, some, any)
+i. Display details of all orders in month Jan 2020.
+ii. Display details of all return order in year 2022.
+iii. Display total amount of orders on 21 April 2012
+iv. Get details of all orders having total order amount greater than 10000
+v. Display total number of orders on 21 April 2021 
+2. Write and implement function to calculate discount of the product.
+
+CREATE DATABASE OMS;
+USE OMS;
+SHOW databases;
+
+CREATE TABLE Customer (
+    Customer_ID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(100),
+    Phone VARCHAR(15)
+);
+
+CREATE TABLE Product (
+    Product_ID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Price DECIMAL(10, 2),
+    Stock INT
+);
+
+CREATE TABLE Orders (
+    Order_ID INT PRIMARY KEY,
+    Customer_ID INT,
+    Order_Date DATE,
+    Total_Amount DECIMAL(10, 2),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+CREATE TABLE Order_Details (
+    Order_ID INT,
+    Product_ID INT,
+    Quantity INT,
+    Price DECIMAL(10, 2),
+    PRIMARY KEY (Order_ID, Product_ID),
+    FOREIGN KEY (Order_ID) REFERENCES Orders(Order_ID),
+    FOREIGN KEY (Product_ID) REFERENCES Product(Product_ID)
+);
+
+CREATE TABLE ReturnOrder (
+    Return_ID INT PRIMARY KEY,
+    Order_ID INT,
+    Return_Date DATE,
+    Reason VARCHAR(255),
+    FOREIGN KEY (Order_ID) REFERENCES Orders(Order_ID)
+);
+
+#i. Display details of all orders in month Jan 2020
+SELECT * FROM Orders
+WHERE Order_Date BETWEEN '2020-01-01' AND '2020-01-31';
+
+#ii. Display details of all return orders in year 2022
+SELECT * FROM ReturnOrder
+WHERE YEAR(Return_Date) = 2022;
+
+#iii. Display total amount of orders on 21 April 2012
+SELECT SUM(Total_Amount) AS Total_Orders_Amount
+FROM Orders
+WHERE Order_Date = '2012-04-21';
+
+#iv. Get details of all orders having total order amount greater than 10000
+SELECT * FROM Orders
+WHERE Total_Amount > 10000;
+
+#v. Display total number of orders on 21 April 2021
+SELECT COUNT(*) AS Number_of_Orders
+FROM Orders
+WHERE Order_Date = '2021-04-21';
 
