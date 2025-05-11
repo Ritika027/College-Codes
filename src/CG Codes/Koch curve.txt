@@ -1,0 +1,68 @@
+
+#include <GL/freeglut.h>
+#include <cmath>
+using namespace std;
+
+class KochFractal {
+public:
+    void koch(float x1, float y1, float x2, float y2, int depth) {
+        if (depth == 0) {
+            glBegin(GL_LINES);
+            glVertex2f(x1, y1);
+            glVertex2f(x2, y2);
+            glEnd();
+            return;
+        }
+
+        float dx = (x2 - x1) / 3.0f;
+        float dy = (y2 - y1) / 3.0f;
+
+        float xa = x1 + dx;
+        float ya = y1 + dy;
+
+        float xb = x1 + 2 * dx;
+        float yb = y1 + 2 * dy;
+
+        float mx = (x1 + x2) / 2.0f;
+        float my = (y1 + y2) / 2.0f;
+
+        float px = mx - sqrt(3.0f) * (y2 - y1) / 6.0f;
+        float py = my + sqrt(3.0f) * (x2 - x1) / 6.0f;
+
+        koch(x1, y1, xa, ya, depth - 1);
+        koch(xa, ya, px, py, depth - 1);
+        koch(px, py, xb, yb, depth - 1);
+        koch(xb, yb, x2, y2, depth - 1);
+    }
+};
+
+KochFractal fractal;
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColor3f(0, 1, 1);
+
+    // Draw a Koch snowflake using 3 sides of a triangle
+    fractal.koch(100, 200, 300, 200, 4);
+    fractal.koch(300, 200, 200, 350, 4);
+    fractal.koch(200, 350, 100, 200, 4);
+
+    glFlush();
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(800, 800);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Koch Curve");
+
+    glClearColor(0, 0, 0, 1);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, 500, 0, 500);
+
+    glutDisplayFunc(display);
+    glutMainLoop();
+    return 0;
+}

@@ -1,0 +1,140 @@
+#include <GL/glut.h>
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+#define WIDTH 800
+#define HEIGHT 800
+
+int clickCount = 0;
+int x1, y1, x2, y2;
+int lineType = 1; // 1: Simple, 2: Dotted, 3: Dashed, 4: Solid
+
+// Set pixel function
+void setPixel(int x, int y) {
+    glBegin(GL_POINTS);
+    glVertex2i(x, y);
+    glEnd();
+    glFlush();
+}
+
+// DDA Line Drawing with style
+void ddaLine(int x1, int y1, int x2, int y2, int type) {
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    float steps;
+if (abs(dx) > abs(dy))
+    steps = abs(dx);
+else
+    steps = abs(dy);
+
+    float xInc = dx / steps;
+    float yInc = dy / steps;
+    float x = x1;
+    float y = y1;
+
+   if (type == 4)
+    glPointSize(3.0);
+else
+    glPointSize(1.0);
+
+
+    for (int i = 0; i <= steps; i++) {
+        bool draw = false;
+
+        if (type == 1) draw = true;                           // Simple
+        else if (type == 2) draw = (i % 4 == 0);               // Dotted
+        else if (type == 3) draw = (i % 10 < 5);               // Dashed
+        else if (type == 4) draw = true;                      // Solid
+
+        if (draw) setPixel(round(x), round(y));
+
+        x += xInc;
+        y += yInc;
+    }
+
+    glPointSize(1.0); // Reset point size
+}
+
+// Draw axes
+void drawAxes() {
+    glColor3f(0, 0, 0);
+    glBegin(GL_LINES);
+    glVertex2i(-WIDTH / 2, 0);
+    glVertex2i(WIDTH / 2, 0);
+    glVertex2i(0, -HEIGHT / 2);
+    glVertex2i(0, HEIGHT / 2);
+    glEnd();
+    glFlush();
+}
+
+// Mouse callback
+void mouse(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        int px = x - WIDTH / 2;
+        int py = HEIGHT / 2 - y;
+
+        if (clickCount == 0) {
+            x1 = px;
+            y1 = py;
+            clickCount = 1;
+        } else {
+            x2 = px;
+            y2 = py;
+            glColor3f(1, 0, 0); // Red line
+            ddaLine(x1, y1, x2, y2, lineType);
+            clickCount = 0;
+        }
+    }
+}
+
+// Menu callback
+void menu(int item) {
+    if (item >= 1 && item <= 4) {
+        lineType = item;
+    } else if (item == 5) {
+        glClear(GL_COLOR_BUFFER_BIT);
+        drawAxes();
+    } else if (item == 6) {
+        exit(0);
+    }
+}
+
+// Display
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawAxes();
+    glFlush();
+}
+
+// Init
+void init() {
+    glClearColor(1, 1, 1, 0);
+    gluOrtho2D(-WIDTH / 2, WIDTH / 2, -HEIGHT / 2, HEIGHT / 2);
+}
+
+// Main
+int main(int argc, char **argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(WIDTH, HEIGHT);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("DDA Line Styles in 4 Quadrants");
+
+    init();
+    glutDisplayFunc(display);
+    glutMouseFunc(mouse);
+
+    // Create Menu
+    glutCreateMenu(menu);
+    glutAddMenuEntry("Simple Line", 1);
+    glutAddMenuEntry("Dotted Line", 2);
+    glutAddMenuEntry("Dashed Line", 3);
+    glutAddMenuEntry("Solid Line", 4);
+    glutAddMenuEntry("Clear", 5);
+    glutAddMenuEntry("Exit", 6);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+    glutMainLoop();
+    return 0;
+}

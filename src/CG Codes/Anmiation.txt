@@ -1,0 +1,77 @@
+#include <GL/glut.h>
+#include <GL/glu.h>
+#include <iostream>
+
+using namespace std;
+
+float startX = -1.0f;
+float stopX = 1.0f;
+float currentX = startX;
+float t = 0.0f;
+float speed = 0.01f;
+bool movingForward = true; // Renamed from 'forward' to avoid macro conflict
+
+void initialize() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Background color
+    glPointSize(1.0);
+    glLineWidth(2.0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); // 2D view setup
+}
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+
+    // Apply transformation for animation
+    glTranslatef(currentX, 0.0f, 0.0f);
+
+    // Draw moving square
+    glColor3f(1.0, 1.0, 1.0); // White color
+    glBegin(GL_QUADS);
+    glVertex2f(-0.1f, -0.1f);
+    glVertex2f( 0.1f, -0.1f);
+    glVertex2f( 0.1f,  0.1f);
+    glVertex2f(-0.1f,  0.1f);
+    glEnd();
+
+    glutSwapBuffers(); // Use double buffering
+}
+
+void update(int value) {
+    currentX = (1 - t) * startX + t * stopX;
+
+    if (movingForward) {
+        t += speed;
+    } else {
+        t -= speed;
+    }
+
+    if (t >= 1.0f) {
+        t = 1.0f;
+        movingForward = false;
+    } else if (t <= 0.0f) {
+        t = 0.0f;
+        movingForward = true;
+    }
+
+    glutPostRedisplay();
+    glutTimerFunc(16, update, 0); // ~60 FPS
+}
+
+int main(int argc, char *argv[]) {
+    glutInit(&argc, argv);
+    glutInitWindowSize(600, 400);
+    glutInitWindowPosition(100, 100);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+
+    glutCreateWindow("Simple Object Animation");
+    initialize();
+
+    glutDisplayFunc(display);
+    glutTimerFunc(0, update, 0);
+
+    glutMainLoop();
+    return 0;
+}

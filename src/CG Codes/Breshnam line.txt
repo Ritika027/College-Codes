@@ -1,0 +1,156 @@
+#include <GL/glut.h>
+#include <iostream>
+using namespace std;
+
+#define WIDTH 800
+#define HEIGHT 800
+
+int clickCount = 0;
+int x1, y1, x2, y2;
+int lineType = 1; // 1: Simple, 2: Dotted, 3: Dashed, 4: Solid
+
+// Set pixel function
+void setPixel(int x, int y) {
+    glBegin(GL_POINTS);
+    glVertex2i(x, y);
+    glEnd();
+    glFlush();
+}
+
+// Bresenham Line Drawing with style
+void bresenhamLine(int x1, int y1, int x2, int y2, int type) {
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
+    int x = x1, y = y1;
+    
+    int s1, s2;
+    if (x2 - x1 >= 0)
+    s1 = 1;
+else
+    s1 = -1;
+
+   if (y2 - y1 >= 0)
+    s2 = 1;
+else
+    s2 = -1;
+
+
+    bool interchange = false;
+    if (dy > dx) {
+        swap(dx, dy);
+        interchange = true;
+    }
+
+    int e = 2 * dy - dx;
+    int count = 0;
+
+    for (int i = 0; i <= dx; i++) {
+        bool draw = false;
+
+        if (type == 1) draw = true;                            // Simple
+        else if (type == 2) draw = (count % 2 == 0);            // Dotted
+        else if (type == 3) draw = (count % 6 < 3);             // Dashed
+        else if (type == 4) {                                   // Solid
+            glPointSize(3.0); draw = true;
+        }
+
+        if (draw) setPixel(x, y);
+
+        while (e > 0) {
+            if (interchange) x += s1;
+            else y += s2;
+            e = e - 2 * dx;
+        }
+
+        if (interchange) y += s2;
+        else x += s1;
+        e = e + 2 * dy;
+
+        count++;
+    }
+  
+    glPointSize(1.0); // Reset to default
+}
+
+// Draw axes
+void drawAxes() {
+    glColor3f(0, 0, 0);
+    glBegin(GL_LINES);
+    glVertex2i(-WIDTH / 2, 0);
+    glVertex2i(WIDTH / 2, 0);
+    glVertex2i(0, -HEIGHT / 2);
+    glVertex2i(0, HEIGHT / 2);
+    glEnd();
+    glFlush();
+}
+
+// Mouse callback
+void mouse(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        int px = x - WIDTH / 2;
+        int py = HEIGHT / 2 - y;
+
+        if (clickCount == 0) {
+            x1 = px;
+            y1 = py;
+            clickCount = 1;
+        } else {
+            x2 = px;
+            y2 = py;
+            glColor3f(1, 0, 0); // red line
+            bresenhamLine(x1, y1, x2, y2, lineType);
+            clickCount = 0;
+        }
+    }
+}
+
+// Menu callback
+void menu(int item) {
+    if (item >= 1 && item <= 4) {
+        lineType = item;
+    } else if (item == 5) {
+        glClear(GL_COLOR_BUFFER_BIT);
+        drawAxes();
+    } else if (item == 6) {
+        exit(0);
+    }
+}
+
+// Display
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawAxes();
+    glFlush();
+}
+
+// Init
+void init() {
+    glClearColor(1, 1, 1, 0);
+    gluOrtho2D(-WIDTH / 2, WIDTH / 2, -HEIGHT / 2, HEIGHT / 2);
+}
+
+// Main
+int main(int argc, char **argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(WIDTH, HEIGHT);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Bresenham Line Styles in 4 Quadrants");
+
+    init();
+    glutDisplayFunc(display);
+    glutMouseFunc(mouse);
+
+    // Create Menu
+    glutCreateMenu(menu);
+    glutAddMenuEntry("Simple Line", 1);
+    glutAddMenuEntry("Dotted Line", 2);
+    glutAddMenuEntry("Dashed Line", 3);
+    glutAddMenuEntry("Solid Line", 4);
+    glutAddMenuEntry("Clear", 5);
+    glutAddMenuEntry("Exit", 6);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+    glutMainLoop();
+    return 0;
+}
